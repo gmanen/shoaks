@@ -9,7 +9,6 @@
   "license": "MIT",
   "private": false,
   "devDependencies": {
-    "@originjs/vite-plugin-commonjs": "^1.1.2",
     "benchmark": "^2.1.4",
     "eslint": "^9.0.0",
     "mocha": "^11.1.0",
