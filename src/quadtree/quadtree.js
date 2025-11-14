@@ -321,7 +321,10 @@ class Quadtree {
             }
 
             this.regions = []
-            this.parent.cleanup()
+
+            if (null !== this.parent) {
+                this.parent.cleanup()
+            }
         }
     }
 
@@ -410,3 +413,9 @@ class Quadtree {
         }
     }
 }
+
+module.exports.Point = Point
+module.exports.Line = Line
+module.exports.Rectangle = Rectangle
+module.exports.Circle = Circle
+module.exports.Quadtree = Quadtree

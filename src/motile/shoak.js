@@ -1,3 +1,10 @@
+const {motileBehaviors} = require('./motile')
+const {canSee} = require('./sighted')
+const Brain = require('./brain')
+const {topDownWidth, topDownHeight} = require('../config')
+const {Circle} = require('../quadtree/quadtree')
+let environment = require ('../environment')
+
 const generateCircle = self => {
     return new Circle(self.position.x, self.position.y, self.radius)
 }
@@ -55,8 +62,8 @@ const Shoak = (id, brain, shoakColor) => {
     self.radius = getShoakRadius(self)
 
     const shoakBehaviors = self => ({
-        think: (qtree, sketch) => {
-            const sight = self.see(qtree, ['foish'], self.sight, sketch)
+        think: (sketch) => {
+            const sight = self.see(environment.qtree, ['foish'], self.sight, sketch)
 
             if (debug) {
                 const velocity = p5.Vector.fromAngle(self.velocity.heading(), 100)
@@ -94,9 +101,9 @@ const Shoak = (id, brain, shoakColor) => {
             }
         },
 
-        eat: qtree => {
+        eat: () => {
             const eaten = []
-            const points = qtree.query(new Circle(self.position.x, self.position.y, self.radius + 10), {types: ['foish']})
+            const points = environment.qtree.query(new Circle(self.position.x, self.position.y, self.radius + 10), {types: ['foish']})
 
             for (const point of points) {
                 const massGain = Math.min(point.data.mass, self.maxMass - self.mass)
@@ -107,8 +114,8 @@ const Shoak = (id, brain, shoakColor) => {
                 eaten.push(point.data.subject)
             }
 
-            if (self.score > frenzy.allTimeBest) {
-                frenzy.allTimeBest = self.score
+            if (self.score > environment.frenzy.allTimeBest) {
+                environment.frenzy.allTimeBest = self.score
             }
 
             return eaten
@@ -154,7 +161,7 @@ const Shoak = (id, brain, shoakColor) => {
         },
 
         show: (sketch) => {
-            const opacity = p.map(null === frenzy.aliveBest || 0 === frenzy.aliveBest.score ? 1 : self.score / frenzy.aliveBest.score, 0, 1, 50, 255, true)
+            const opacity = p.map(null === environment.frenzy.aliveBest || 0 === environment.frenzy.aliveBest.score ? 1 : self.score / environment.frenzy.aliveBest.score, 0, 1, 50, 255, true)
             const shoakColor = p.color('hsba(' + self.color + ', 100%, 80%, ' + opacity + ')')
 
             sketch.stroke(shoakColor)
@@ -165,3 +172,5 @@ const Shoak = (id, brain, shoakColor) => {
 
     return Object.assign(self, motileBehaviors(self), shoakBehaviors(self), canSee(self))
 }
+
+module.exports = Shoak

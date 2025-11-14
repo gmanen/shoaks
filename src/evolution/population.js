@@ -1,3 +1,5 @@
+const Graveyard = require('./graveyard')
+
 class Population {
     constructor(size, reproductionRate, mutationRate, generateIndividual) {
         this.size = size
@@ -196,3 +198,5 @@ class Population {
         return selectedList
     }
 }
+
+module.exports = Population

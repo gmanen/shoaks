@@ -1,3 +1,10 @@
+const {motileBehaviors} = require('./motile')
+const {canSee} = require('./sighted')
+const Brain = require('./brain')
+const {topDownWidth, topDownHeight} = require('../config')
+const {Circle} = require('../quadtree/quadtree')
+const environment = require('../environment')
+
 const generatePoly = self => {
     const poly = []
     const head = p5.Vector.fromAngle(self.velocity.heading(), self.radius)
@@ -64,10 +71,10 @@ const Foish = (id, brain, foishColor) => {
     self.shape = generatePoly(self)
 
     const foishBehaviors = self => ({
-        school: qtree => {
-            const align = self.align(qtree)
-            const cohesion = self.cohesion(qtree)
-            const separation = self.separation(qtree)
+        school: () => {
+            const align = self.align(environment.qtree)
+            const cohesion = self.cohesion(environment.qtree)
+            const separation = self.separation(environment.qtree)
             const isAlign = align.x !== 0 && align.y !== 0
             const isCohesion = cohesion.x !== 0 && cohesion.y !== 0
             const isSeparation = separation.x !== 0 && separation.y !== 0
@@ -89,11 +96,11 @@ const Foish = (id, brain, foishColor) => {
             }
         },
 
-        align: qtree => {
+        align: () => {
             const alignment = p.createVector()
             let alignmentTotal = 0
 
-            for (const point of qtree.query(new Circle(self.position.x, self.position.y, self.alignPerceptionRadius), {types: ['foish']})) {
+            for (const point of environment.qtree.query(new Circle(self.position.x, self.position.y, self.alignPerceptionRadius), {types: ['foish']})) {
                 if (point.id === self.id) {
                     continue
                 }
@@ -115,11 +122,11 @@ const Foish = (id, brain, foishColor) => {
             return alignment
         },
 
-        cohesion: qtree => {
+        cohesion: () => {
             const cohesion = p.createVector()
             let cohesionTotal = 0
 
-            for (let point of qtree.query(new Circle(self.position.x, self.position.y, self.cohesionPerceptionRadius), {types: ['foish']})) {
+            for (let point of environment.qtree.query(new Circle(self.position.x, self.position.y, self.cohesionPerceptionRadius), {types: ['foish']})) {
                 if (point.id === self.id) {
                     continue
                 }
@@ -144,11 +151,11 @@ const Foish = (id, brain, foishColor) => {
             return cohesion
         },
 
-        separation: qtree => {
+        separation: () => {
             const separation = p.createVector()
             let separationTotal = 0
 
-            for (let point of qtree.query(new Circle(self.position.x, self.position.y, self.separationPerceptionRadius), {types: ['foish']})) {
+            for (let point of environment.qtree.query(new Circle(self.position.x, self.position.y, self.separationPerceptionRadius), {types: ['foish']})) {
                 if (point.id === self.id) {
                     continue
                 }
@@ -180,8 +187,8 @@ const Foish = (id, brain, foishColor) => {
             return separation
         },
 
-        think: (qtree, sketch) => {
-            const sight = self.see(qtree, ['shoak'], self.sight, sketch)
+        think: (sketch) => {
+            const sight = self.see(environment.qtree, ['shoak'], self.sight, sketch)
 
             if (debug) {
                 const velocity = p5.Vector.fromAngle(self.velocity.heading(), 100)
@@ -250,3 +257,5 @@ const Foish = (id, brain, foishColor) => {
 
     return Object.assign(self, motileBehaviors(self), foishBehaviors(self), canSee(self))
 }
+
+module.exports = Foish

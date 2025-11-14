@@ -1,3 +1,5 @@
+const {topDownWidth, topDownHeight} = require('../config')
+
 const getSteering = (desiredVelocity, currentVelocity) => p5.Vector.sub(desiredVelocity, currentVelocity)
 const getAccelerationFromForce = (mass, force, limit) => {
     const resultingAcceleration = p5.Vector.div(force, mass)
@@ -79,3 +81,5 @@ const Motile = (baseSpeed, minSpeed, maxSpeed, maxForce, mass) => {
 
     return Object.assign(self, motileBehaviors(self))
 }
+
+module.exports.motileBehaviors = motileBehaviors

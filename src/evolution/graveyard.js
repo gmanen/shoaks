@@ -11,3 +11,5 @@ class Graveyard {
         this.corpses = []
     }
 }
+
+module.exports = Graveyard
