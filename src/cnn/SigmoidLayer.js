@@ -1,7 +1,7 @@
-const Volume = require('./Volume.js')
-const Layer = require('./Layer.js')
+import Volume from './Volume.js'
+import Layer from './Layer.js'
 
-class SigmoidLayer extends Layer {
+export default class SigmoidLayer extends Layer {
     constructor(params) {
         super()
 
@@ -45,5 +45,3 @@ class SigmoidLayer extends Layer {
         })
     }
 }
-
-module.exports = SigmoidLayer

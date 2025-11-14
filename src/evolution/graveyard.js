@@ -1,4 +1,4 @@
-class Graveyard {
+export default class Graveyard {
     constructor() {
         this.corpses = []
     }
@@ -11,5 +11,3 @@ class Graveyard {
         this.corpses = []
     }
 }
-
-module.exports = Graveyard

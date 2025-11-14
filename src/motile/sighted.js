@@ -1,10 +1,8 @@
-const {Circle, Line} = require('../quadtree/quadtree')
+import {Circle, Line} from '../quadtree/quadtree.js'
 
-const canSee = self => ({
+export const canSee = (self) => ({
     // storedSight should be an array. It will be reset and then filled with the distance values of each closest point colliding with one of the rays to display the POV scene
-    see: (qtree, types, storedSight, sketch) => {
-        types = types || []
-
+    see: (qtree, types = [], storedSight, sketch) => {
         if (Array.isArray(storedSight)) {
             storedSight.length = 0
         }
@@ -84,5 +82,3 @@ const canSee = self => ({
         return sight
     }
 })
-
-module.exports.canSee = canSee

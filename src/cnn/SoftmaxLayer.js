@@ -1,7 +1,7 @@
-const Volume = require('./Volume.js')
-const Layer = require('./Layer.js')
+import Volume from './Volume.js'
+import Layer from './Layer.js'
 
-class SoftmaxLayer extends Layer {
+export default class SoftmaxLayer extends Layer {
     constructor(params) {
         super()
 
@@ -50,5 +50,3 @@ class SoftmaxLayer extends Layer {
         })
     }
 }
-
-module.exports = SoftmaxLayer

@@ -1,7 +1,7 @@
-const Volume = require('./Volume.js')
-const Layer = require('./Layer.js')
+import Volume from './Volume.js'
+import Layer from './Layer.js'
 
-class TanhLayer extends Layer {
+export default class TanhLayer extends Layer {
     constructor(params) {
         super()
 
@@ -44,5 +44,3 @@ class TanhLayer extends Layer {
         })
     }
 }
-
-module.exports = TanhLayer

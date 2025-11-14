@@ -1,9 +1,9 @@
-const Shoak = require('./motile/shoak')
-const Foish = require('./motile/foish')
-const Population = require('./evolution/population')
-const {Point, Quadtree} = require('./quadtree/quadtree')
-const {padding, topDownWidth, topDownHeight, povWidth, povHeight} = require('./config')
-const environment = require ('./environment')
+import Shoak from './motile/shoak.js'
+import Foish from './motile/foish.js'
+import Population from './evolution/population.js'
+import {Point, Quadtree} from './quadtree/quadtree.js'
+import {padding, topDownWidth, topDownHeight, povWidth, povHeight} from './config.js'
+import environment from './environment.js'
 
 // Customizable parameters
 window.displayPov = getParameter('displayPov', true)
@@ -141,7 +141,7 @@ const p = new p5(sketch => {
 })
 global.p = p
 
-for (container of ['shoak-pov-sketch', 'foish-pov-sketch']) {
+for (const container of ['shoak-pov-sketch', 'foish-pov-sketch']) {
     new p5(sketch => {
         sketch.setup = function () {
             sketch.createCanvas(povWidth, povHeight)

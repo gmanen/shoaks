@@ -1,9 +1,9 @@
-const {motileBehaviors} = require('./motile')
-const {canSee} = require('./sighted')
-const Brain = require('./brain')
-const {topDownWidth, topDownHeight} = require('../config')
-const {Circle} = require('../quadtree/quadtree')
-const environment = require('../environment')
+import {motileBehaviors} from './motile.js'
+import {canSee} from './sighted.js'
+import Brain from './brain.js'
+import {topDownWidth, topDownHeight} from '../config.js'
+import {Circle} from '../quadtree/quadtree.js'
+import environment from '../environment.js'
 
 const generatePoly = self => {
     const poly = []
@@ -258,4 +258,4 @@ const Foish = (id, brain, foishColor) => {
     return Object.assign(self, motileBehaviors(self), foishBehaviors(self), canSee(self))
 }
 
-module.exports = Foish
+export default Foish

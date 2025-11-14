@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "AI-driven predators and preys ",
   "main": "index.js",
+  "type": "module",
   "repository": "git@github.com:gmanen/shoaks.git",
   "author": "Guillaume MANEN <guillaume.manen@gmail.com>",
   "license": "MIT",

@@ -1,6 +1,6 @@
-const {zeros, randomGaussian} = require('./utils')
+import {zeros, randomGaussian} from './utils.js'
 
-class Volume {
+export default class Volume {
     constructor(width, height, depth, defaultValue) {
         this.data = []
         this.gradients = []
@@ -105,5 +105,3 @@ class Volume {
         }
     }
 }
-
-module.exports = Volume
