@@ -1,4 +1,5 @@
 import assert from 'node:assert'
+import { describe, it } from 'mocha'
 import Convolution1DLayer from '../src/cnn/Convolution1DLayer.js'
 import MaxPool1DLayer from '../src/cnn/MaxPool1DLayer.js'
 import FullyConnectedLayer from '../src/cnn/FullyConnectedLayer.js'
