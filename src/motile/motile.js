@@ -1,4 +1,4 @@
-const {topDownWidth, topDownHeight} = require('../config')
+import {topDownWidth, topDownHeight} from '../config.js'
 
 const getSteering = (desiredVelocity, currentVelocity) => p5.Vector.sub(desiredVelocity, currentVelocity)
 const getAccelerationFromForce = (mass, force, limit) => {
@@ -61,9 +61,7 @@ const canUpdate = self => ({
 
 const motileBehaviors = self => Object.assign({}, canBounce(self), canSteer(self), canApplyForce(self), canUpdate(self))
 
-const Motile = (baseSpeed, minSpeed, maxSpeed, maxForce, mass) => {
-    mass = mass || 1
-
+const Motile = (baseSpeed, minSpeed, maxSpeed, maxForce, mass = 1) => {
     const velocity = p5.Vector.random2D()
     velocity.setMag(baseSpeed)
 
@@ -74,7 +72,7 @@ const Motile = (baseSpeed, minSpeed, maxSpeed, maxForce, mass) => {
         maxForce,
         mass,
         position: p.createVector(p.random(topDownWidth), p.random(topDownHeight)),
-        velocity: velocity,
+        velocity,
         acceleration: p.createVector(),
         radius: 1,
     }
@@ -82,4 +80,4 @@ const Motile = (baseSpeed, minSpeed, maxSpeed, maxForce, mass) => {
     return Object.assign(self, motileBehaviors(self))
 }
 
-module.exports.motileBehaviors = motileBehaviors
+export {motileBehaviors}

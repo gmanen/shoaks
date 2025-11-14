@@ -1,7 +1,7 @@
-const Volume = require('./Volume.js')
-const Layer = require('./Layer.js')
+import Volume from './Volume.js'
+import Layer from './Layer.js'
 
-class MaxPool1DLayer extends Layer {
+export default class MaxPool1DLayer extends Layer {
     constructor(params) {
         super()
 
@@ -76,5 +76,3 @@ class MaxPool1DLayer extends Layer {
         })
     }
 }
-
-module.exports = MaxPool1DLayer

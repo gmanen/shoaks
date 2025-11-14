@@ -1,7 +1,7 @@
-const Volume = require('./cnn/Volume')
-const NeuralNetwork = require('./cnn/NeuralNetwork')
-const _ = require('lodash')
-const benchmark = require('benchmark')
+import Volume from './cnn/Volume.js'
+import NeuralNetwork from './cnn/NeuralNetwork.js'
+import _ from 'lodash'
+import benchmark from 'benchmark'
 
 const Benchmark = benchmark.runInContext({ _ })
 const input = new Volume( 180, 1, 4)
@@ -31,15 +31,15 @@ pooledMurkyNet.addLayer('fc', {nbNeurons: 12, activation: 'relu'})
 convNet.addLayer('regression', {nbOutputs: 2})
 
 const suite = Benchmark.Suite('Convnet vs Poolnet')
-suite.add('Conv Neural Net', function() {
+suite.add('Conv Neural Net', () => {
     convNet.predict(input)
-}).add('Conv + Pool Neural Net', function() {
+}).add('Conv + Pool Neural Net', () => {
     pooledNet.predict(input)
-}).add('Pool + Conv Neural Net', function() {
+}).add('Pool + Conv Neural Net', () => {
     pooledMurkyNet.predict(input)
-}).on('cycle', function(event) {
+}).on('cycle', (event) => {
     console.log(String(event.target))
 }).on('complete', function() {
     console.log('Fastest forward pass is ' + this.filter('fastest').map('name'))
     console.log('Average time ' + (this.filter('fastest')[0].stats.mean * 1000.0).toFixed(2) + 'ms')
-}).run({ 'async': true })
+}).run({async: true})

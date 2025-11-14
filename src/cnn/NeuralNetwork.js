@@ -1,21 +1,21 @@
-const Convolution1DLayer = require('./Convolution1DLayer')
-const MaxPool1DLayer = require('./MaxPool1DLayer')
-const FullyConnectedLayer = require('./FullyConnectedLayer')
-const ReluLayer = require('./ReluLayer')
-const SigmoidLayer = require('./SigmoidLayer')
-const TanhLayer = require('./TanhLayer')
-const SoftmaxLayer = require('./SoftmaxLayer')
-const RegressionLayer = require('./RegressionLayer')
+import Convolution1DLayer from './Convolution1DLayer.js'
+import MaxPool1DLayer from './MaxPool1DLayer.js'
+import FullyConnectedLayer from './FullyConnectedLayer.js'
+import ReluLayer from './ReluLayer.js'
+import SigmoidLayer from './SigmoidLayer.js'
+import TanhLayer from './TanhLayer.js'
+import SoftmaxLayer from './SoftmaxLayer.js'
+import RegressionLayer from './RegressionLayer.js'
 
-class NeuralNetwork {
+export default class NeuralNetwork {
     constructor() {
         this.layers = []
     }
 
-    addLayer(type, params) {
-        let layer, activationFunction
+    addLayer(type, params = {}) {
+        let layer
+        let activationFunction
         const currentLayersLength = this.layers.length
-        params = params || {}
 
         if (currentLayersLength === 0 && !params.hasOwnProperty('inputShape')) {
             throw new Error('First layer must have explicit input shape')
@@ -48,7 +48,7 @@ class NeuralNetwork {
             layer = new TanhLayer(params)
         } else if ('softmax' === type) {
             if (!params.hasOwnProperty('nbClasses')) {
-                throw "param 'nbClasses' is required for Softmax layer"
+                throw new Error("param 'nbClasses' is required for Softmax layer")
             }
 
             params.nbNeurons = params.nbClasses
@@ -61,7 +61,7 @@ class NeuralNetwork {
             layer = new SoftmaxLayer({inputShape: fcLayer.getOutputShape()})
         } else if ('regression' === type) {
             if (!params.hasOwnProperty('nbOutputs')) {
-                throw "param 'nbClasses' is required for Regression layer"
+                throw new Error("param 'nbClasses' is required for Regression layer")
             }
 
             params.nbNeurons = params.nbOutputs
@@ -102,5 +102,3 @@ class NeuralNetwork {
         }
     }
 }
-
-module.exports = NeuralNetwork

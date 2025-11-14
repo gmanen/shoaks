@@ -1,7 +1,7 @@
-const Volume = require('./Volume.js')
-const Layer = require('./Layer.js')
+import Volume from './Volume.js'
+import Layer from './Layer.js'
 
-class RegressionLayer extends Layer {
+export default class RegressionLayer extends Layer {
     constructor(params) {
         super()
 
@@ -47,5 +47,3 @@ class RegressionLayer extends Layer {
         })
     }
 }
-
-module.exports = RegressionLayer

@@ -1,6 +1,6 @@
-const Graveyard = require('./graveyard')
+import Graveyard from './graveyard.js'
 
-class Population {
+export default class Population {
     constructor(size, reproductionRate, mutationRate, generateIndividual) {
         this.size = size
         this.reproductionRate = reproductionRate
@@ -148,7 +148,7 @@ class Population {
 
     select(number, group, different) {
         if (number > group.length) {
-            throw 'Cannot select '+number+' individuals from '+group.length
+            throw new Error('Cannot select ' + number + ' individuals from ' + group.length)
         }
 
         const population = [...group]
@@ -198,5 +198,3 @@ class Population {
         return selectedList
     }
 }
-
-module.exports = Population

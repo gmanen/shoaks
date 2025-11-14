@@ -1,4 +1,4 @@
-const {Point} = require('./quadtree/quadtree')
+import {Point} from './quadtree/quadtree.js'
 
 class Environment {
     constructor() {
@@ -19,4 +19,4 @@ class Environment {
 }
 const environment = new Environment()
 
-module.exports = environment
+export default environment

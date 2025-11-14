@@ -1,15 +1,15 @@
-const assert = require('assert')
-const Convolution1DLayer = require('../src/cnn/Convolution1DLayer')
-const MaxPool1DLayer = require('../src/cnn/MaxPool1DLayer')
-const FullyConnectedLayer = require('../src/cnn/FullyConnectedLayer')
-const ReluLayer = require('../src/cnn/ReluLayer')
-const SigmoidLayer = require('../src/cnn/SigmoidLayer')
-const TanhLayer = require('../src/cnn/TanhLayer')
-const SoftmaxLayer = require('../src/cnn/SoftmaxLayer')
-const RegressionLayer = require('../src/cnn/RegressionLayer')
-const NeuralNetwork = require('../src/cnn/NeuralNetwork')
-const Volume = require('../src/cnn/Volume')
-const {sigmoid} = require('../src/cnn/utils')
+import assert from 'node:assert'
+import Convolution1DLayer from '../src/cnn/Convolution1DLayer.js'
+import MaxPool1DLayer from '../src/cnn/MaxPool1DLayer.js'
+import FullyConnectedLayer from '../src/cnn/FullyConnectedLayer.js'
+import ReluLayer from '../src/cnn/ReluLayer.js'
+import SigmoidLayer from '../src/cnn/SigmoidLayer.js'
+import TanhLayer from '../src/cnn/TanhLayer.js'
+import SoftmaxLayer from '../src/cnn/SoftmaxLayer.js'
+import RegressionLayer from '../src/cnn/RegressionLayer.js'
+import NeuralNetwork from '../src/cnn/NeuralNetwork.js'
+import Volume from '../src/cnn/Volume.js'
+import {sigmoid} from '../src/cnn/utils.js'
 
 describe('Convolution 1D', function () {
     it('should compute correct shapes', function () {

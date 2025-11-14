@@ -1,7 +1,7 @@
-const Volume = require('./Volume.js')
-const Layer = require('./Layer.js')
+import Volume from './Volume.js'
+import Layer from './Layer.js'
 
-class FullyConnectedLayer extends Layer {
+export default class FullyConnectedLayer extends Layer {
     constructor(params) {
         super(params.weights || [], params.biases)
 
@@ -77,5 +77,3 @@ class FullyConnectedLayer extends Layer {
         })
     }
 }
-
-module.exports = FullyConnectedLayer

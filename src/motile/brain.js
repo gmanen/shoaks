@@ -1,7 +1,7 @@
-const NeuralNetwork = require('../cnn/NeuralNetwork')
-const {flatten} = require('../cnn/utils')
+import NeuralNetwork from '../cnn/NeuralNetwork.js'
+import {flatten} from '../cnn/utils.js'
 
-class Brain {
+export default class Brain {
     constructor(sightInputs, additionalInputs, outputs) {
         if (sightInputs !== undefined) {
             this.convNet = new NeuralNetwork()
@@ -68,17 +68,13 @@ class Brain {
 
                     sqrtNbWeights = Math.sqrt(sqrtNbWeights)
 
-                    layer.weights[i] = layer.weights[i].map(function mutateMapper(value) {
-                        if (Array.isArray(value)) {
-                            return value.map(mutateMapper)
-                        } else {
-                            return value + p.randomGaussian(0, 1 / sqrtNbWeights)
-                        }
-                    })
+                    const mutateMapper = (value) => Array.isArray(value)
+                        ? value.map(mutateMapper)
+                        : value + p.randomGaussian(0, 1 / sqrtNbWeights)
+
+                    layer.weights[i] = layer.weights[i].map(mutateMapper)
                 }
             }
         }
     }
 }
-
-module.exports = Brain

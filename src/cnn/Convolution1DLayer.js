@@ -1,7 +1,7 @@
-const Volume = require('./Volume.js')
-const Layer = require('./Layer.js')
+import Volume from './Volume.js'
+import Layer from './Layer.js'
 
-class Convolution1DLayer extends Layer {
+export default class Convolution1DLayer extends Layer {
     constructor(params) {
         super(params.weights || [], params.biases)
 
@@ -104,5 +104,3 @@ class Convolution1DLayer extends Layer {
         })
     }
 }
-
-module.exports = Convolution1DLayer

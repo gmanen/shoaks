@@ -414,8 +414,4 @@ class Quadtree {
     }
 }
 
-module.exports.Point = Point
-module.exports.Line = Line
-module.exports.Rectangle = Rectangle
-module.exports.Circle = Circle
-module.exports.Quadtree = Quadtree
+export {Point, Line, Rectangle, Circle, Quadtree}
