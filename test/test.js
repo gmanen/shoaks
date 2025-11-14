@@ -1,5 +1,5 @@
 import assert from 'node:assert'
-import { describe, it } from 'mocha'
+import { describe, it } from 'node:test'
 import Convolution1DLayer from '../src/cnn/Convolution1DLayer.js'
 import MaxPool1DLayer from '../src/cnn/MaxPool1DLayer.js'
 import FullyConnectedLayer from '../src/cnn/FullyConnectedLayer.js'
@@ -12,6 +12,40 @@ import NeuralNetwork from '../src/cnn/NeuralNetwork.js'
 import Volume from '../src/cnn/Volume.js'
 import {sigmoid} from '../src/cnn/utils.js'
 
+const normalize = (value) => {
+    if (ArrayBuffer.isView(value) && !(value instanceof DataView)) {
+        return Array.from(value, normalize)
+    }
+
+    if (Array.isArray(value)) {
+        return value.map(normalize)
+    }
+
+    return value
+}
+
+const roundNumbers = (value, digits = 2) => {
+    const normalized = normalize(value)
+
+    if (Array.isArray(normalized)) {
+        return normalized.map((item) => roundNumbers(item, digits))
+    }
+
+    if (typeof normalized === 'number') {
+        return Number(normalized.toFixed(digits))
+    }
+
+    return normalized
+}
+
+const assertDeepEqual = (actual, expected) => {
+    assert.deepStrictEqual(normalize(actual), normalize(expected))
+}
+
+const assertRoundedEqual = (actual, expected, digits = 2) => {
+    assert.deepStrictEqual(roundNumbers(actual, digits), roundNumbers(expected, digits))
+}
+
 describe('Convolution 1D', function () {
     it('should compute correct shapes', function () {
         const layer = new Convolution1DLayer({nbKernels: 5, kernelSize: 3, stride: 1, inputShape: [4, 1, 2]})
@@ -20,7 +54,7 @@ describe('Convolution 1D', function () {
         assert.equal(layer.weights[0].width, 3)
         assert.equal(layer.weights[0].depth, 2)
         assert.equal(layer.biases.width, 5)
-        assert.deepEqual(layer.getOutputShape(), [2, 1, 5])
+        assertDeepEqual(layer.getOutputShape(), [2, 1, 5])
     })
 
     it('should throw an error on wrong kernel size / stride compared to input shape', function () {
@@ -51,8 +85,8 @@ describe('Convolution 1D', function () {
 
         layer.feedForward(new Volume([[2, 3, 4, 5], [1, 2, 3, 4]]))
 
-        assert.deepEqual(layer.output.data[0][0], Float64Array.from([3*2 + 2*3 + -3 + -0.5, 13.5, 17.5, 4 + 3*5 + 3 + -3*4 + -0.5]))
-        assert.deepEqual(layer.output.data[1][0], Float64Array.from([2 + -2*3 + -1 + -3*2 + 4, -8, -9, 5 + 4*3 + -1*4 + 4]))
+        assertDeepEqual(layer.output.data[0][0], [3*2 + 2*3 + -3 + -0.5, 13.5, 17.5, 4 + 3*5 + 3 + -3*4 + -0.5])
+        assertDeepEqual(layer.output.data[1][0], [2 + -2*3 + -1 + -3*2 + 4, -8, -9, 5 + 4*3 + -1*4 + 4])
     })
 
     it('should back propagate', function () {
@@ -88,20 +122,20 @@ describe('Convolution 1D', function () {
                 outputGradients[0][2] * weights[0][1][2] + outputGradients[1][2] * weights[1][1][2] + outputGradients[0][3] * weights[0][1][1] + outputGradients[1][3] * weights[1][1][1],
             ],
         ]
-        assert.deepEqual(inputVolume.gradients[0][0].map(val => val.toFixed(2)), expectedInputGradients[0].map(val => val.toFixed(2)))
-        assert.deepEqual(inputVolume.gradients[1][0].map(val => val.toFixed(2)), expectedInputGradients[1].map(val => val.toFixed(2)))
+        assertRoundedEqual(inputVolume.gradients[0][0], expectedInputGradients[0], 2)
+        assertRoundedEqual(inputVolume.gradients[1][0], expectedInputGradients[1], 2)
         const expectedBiasGradients = [0.25 + -0.2 + 0.7 + 0.32, 0.52 + -1 + 2.3 + 0.23]
-        assert.deepEqual(layer.biases.gradients[0][0], expectedBiasGradients)
+        assertDeepEqual(layer.biases.gradients[0][0], expectedBiasGradients)
         const expectedWeightGradients = [
             [outputGradients[0][1] * input[0][0] + outputGradients[0][2] * input[0][1] + outputGradients[0][3] * input[0][2], outputGradients[0][0] * input[0][0] + outputGradients[0][1] * input[0][1] + outputGradients[0][2] * input[0][2] + outputGradients[0][3] * input[0][3], outputGradients[0][0] * input[0][1] + outputGradients[0][1] * input[0][2] + outputGradients[0][2] * input[0][3]],
             [outputGradients[0][1] * input[1][0] + outputGradients[0][2] * input[1][1] + outputGradients[0][3] * input[1][2], outputGradients[0][0] * input[1][0] + outputGradients[0][1] * input[1][1] + outputGradients[0][2] * input[1][2] + outputGradients[0][3] * input[1][3], outputGradients[0][0] * input[1][1] + outputGradients[0][1] * input[1][2] + outputGradients[0][2] * input[1][3]],
             [outputGradients[1][1] * input[0][0] + outputGradients[1][2] * input[0][1] + outputGradients[1][3] * input[0][2], outputGradients[1][0] * input[0][0] + outputGradients[1][1] * input[0][1] + outputGradients[1][2] * input[0][2] + outputGradients[1][3] * input[0][3], outputGradients[1][0] * input[0][1] + outputGradients[1][1] * input[0][2] + outputGradients[1][2] * input[0][3]],
             [outputGradients[1][1] * input[1][0] + outputGradients[1][2] * input[1][1] + outputGradients[1][3] * input[1][2], outputGradients[1][0] * input[1][0] + outputGradients[1][1] * input[1][1] + outputGradients[1][2] * input[1][2] + outputGradients[1][3] * input[1][3], outputGradients[1][0] * input[1][1] + outputGradients[1][1] * input[1][2] + outputGradients[1][2] * input[1][3]],
         ]
-        assert.deepEqual(layer.weights[0].gradients[0][0], expectedWeightGradients[0])
-        assert.deepEqual(layer.weights[0].gradients[1][0], expectedWeightGradients[1])
-        assert.deepEqual(layer.weights[1].gradients[0][0], expectedWeightGradients[2])
-        assert.deepEqual(layer.weights[1].gradients[1][0], expectedWeightGradients[3])
+        assertDeepEqual(layer.weights[0].gradients[0][0], expectedWeightGradients[0])
+        assertDeepEqual(layer.weights[0].gradients[1][0], expectedWeightGradients[1])
+        assertDeepEqual(layer.weights[1].gradients[0][0], expectedWeightGradients[2])
+        assertDeepEqual(layer.weights[1].gradients[1][0], expectedWeightGradients[3])
 
         const input2 = new Volume([[2, 3, 4, 5], [1, 2, 3, 4]])
 
@@ -110,13 +144,13 @@ describe('Convolution 1D', function () {
         layer.output.gradients[1][0] = outputGradients[1]
         layer.backPropagate()
 
-        assert.deepEqual(input2.gradients[0][0].map(val => val.toFixed(2)), expectedInputGradients[0].map(val => val.toFixed(2)))
-        assert.deepEqual(input2.gradients[1][0], expectedInputGradients[1])
-        assert.deepEqual(layer.biases.gradients[0][0], expectedBiasGradients.map(value => 2 * value))
-        assert.deepEqual(layer.weights[0].gradients[0][0].map(val => val.toFixed(2)), expectedWeightGradients[0].map(value => 2 * value).map(val => val.toFixed(2)))
-        assert.deepEqual(layer.weights[0].gradients[1][0].map(val => val.toFixed(2)), expectedWeightGradients[1].map(value => 2 * value).map(val => val.toFixed(2)))
-        assert.deepEqual(layer.weights[1].gradients[0][0].map(val => val.toFixed(2)), expectedWeightGradients[2].map(value => 2 * value).map(val => val.toFixed(2)))
-        assert.deepEqual(layer.weights[1].gradients[1][0].map(val => val.toFixed(2)), expectedWeightGradients[3].map(value => 2 * value).map(val => val.toFixed(2)))
+        assertRoundedEqual(input2.gradients[0][0], expectedInputGradients[0], 2)
+        assertDeepEqual(input2.gradients[1][0], expectedInputGradients[1])
+        assertDeepEqual(layer.biases.gradients[0][0], expectedBiasGradients.map(value => 2 * value))
+        assertRoundedEqual(layer.weights[0].gradients[0][0], expectedWeightGradients[0].map(value => 2 * value), 2)
+        assertRoundedEqual(layer.weights[0].gradients[1][0], expectedWeightGradients[1].map(value => 2 * value), 2)
+        assertRoundedEqual(layer.weights[1].gradients[0][0], expectedWeightGradients[2].map(value => 2 * value), 2)
+        assertRoundedEqual(layer.weights[1].gradients[1][0], expectedWeightGradients[3].map(value => 2 * value), 2)
     })
 })
 
@@ -124,7 +158,7 @@ describe('MaxPool 1D', function () {
     it('should compute correct shapes', function () {
         const layer = new MaxPool1DLayer({kernelSize: 2, stride: 2, inputShape: [84, 1, 2]})
 
-        assert.deepEqual(layer.getOutputShape(), [42, 1, 2])
+        assertDeepEqual(layer.getOutputShape(), [42, 1, 2])
     })
 
     it('should throw an error on wrong kernel size / stride compared to input shape', function () {
@@ -139,8 +173,8 @@ describe('MaxPool 1D', function () {
 
         layer.feedForward(input)
 
-        assert.deepEqual(layer.output.data[0][0], [3, 2.7, 4, 3, 5])
-        assert.deepEqual(layer.output.data[1][0], [7, 5, 8, 4, 8])
+        assertDeepEqual(layer.output.data[0][0], [3, 2.7, 4, 3, 5])
+        assertDeepEqual(layer.output.data[1][0], [7, 5, 8, 4, 8])
     })
 
     it('should back propagate', function () {
@@ -153,8 +187,8 @@ describe('MaxPool 1D', function () {
         layer.output.gradients[1][0] = outputGradients[1]
         layer.backPropagate()
 
-        assert.deepEqual(input.gradients[0][0], [0, -0.2, 0, 0.7, 1.4, 0, 0, -5.2, 0, 0.12])
-        assert.deepEqual(input.gradients[1][0], [0, -1, 0, 2.3, 0, 1.5, -0.45, 0, 0, 0.34])
+        assertDeepEqual(input.gradients[0][0], [0, -0.2, 0, 0.7, 1.4, 0, 0, -5.2, 0, 0.12])
+        assertDeepEqual(input.gradients[1][0], [0, -1, 0, 2.3, 0, 1.5, -0.45, 0, 0, 0.34])
     })
 
     it('should feed forward with overlap', function () {
@@ -163,8 +197,8 @@ describe('MaxPool 1D', function () {
 
         layer.feedForward(input)
 
-        assert.deepEqual(layer.output.data[0][0], [3, 4, 4])
-        assert.deepEqual(layer.output.data[1][0], [7, 5, 8])
+        assertDeepEqual(layer.output.data[0][0], [3, 4, 4])
+        assertDeepEqual(layer.output.data[1][0], [7, 5, 8])
     })
 
     it('should back propagate with overlap', function () {
@@ -177,8 +211,8 @@ describe('MaxPool 1D', function () {
         layer.output.gradients[1][0] = outputGradients[1]
         layer.backPropagate()
 
-        assert.deepEqual(input.gradients[0][0].map(val => val.toFixed(1)), [0, -0.2, 0, 0, 2.1, 0, 0])
-        assert.deepEqual(input.gradients[1][0], [0, -1, 0, 2.3, 0, 1.5, 0])
+        assertRoundedEqual(input.gradients[0][0], [0, -0.2, 0, 0, 2.1, 0, 0], 1)
+        assertDeepEqual(input.gradients[1][0], [0, -1, 0, 2.3, 0, 1.5, 0])
     })
 })
 
@@ -189,7 +223,7 @@ describe('Fully connected', function () {
         assert.equal(layer.weights.length, 5)
         assert.equal(layer.weights[0].width, 2 * 3 * 4)
         assert.equal(layer.biases.width, 5)
-        assert.deepEqual(layer.getOutputShape(), [5, 1, 1])
+        assertDeepEqual(layer.getOutputShape(), [5, 1, 1])
     })
 
     it('should feed forward', function () {
@@ -207,7 +241,7 @@ describe('Fully connected', function () {
 
         const output = layer.feedForward(input)
 
-        assert.deepEqual(output.data[0][0], [-6.1, 6.0375, 2.575])
+        assertDeepEqual(output.data[0][0], [-6.1, 6.0375, 2.575])
     })
 
     it('should back propagate', function () {
@@ -232,17 +266,17 @@ describe('Fully connected', function () {
             [-0.2 * 0.5 + 0.7 * 0.1 + 1.4 * -0.35, -0.2 * 1 + 0.7 * -0.3 + 1.4 * 0.3, -0.2 * 1.5 + 0.7 * 0.4 + 1.4 * -1, -0.2 * -0.5 + 0.7 * 1 + 1.4 * 0.25],
             [-0.2 * -1 + 0.7 * -0.5 + 1.4 * 1, -0.2 * 0.75 + 0.7 * 0.7 + 1.4 * 0.2, -0.2 * -0.2 + 0.7 * -0.25 + 1.4 * 0.3, -0.2 * 0.25 + 0.7 * 1.25 + 1.4 * -0.75]
         ]
-        assert.deepEqual(input.gradients[0][0], expectedInputGradients[0])
-        assert.deepEqual(input.gradients[1][0], expectedInputGradients[1])
-        assert.deepEqual(layer.biases.gradients[0][0], outputGradients)
+        assertDeepEqual(input.gradients[0][0], expectedInputGradients[0])
+        assertDeepEqual(input.gradients[1][0], expectedInputGradients[1])
+        assertDeepEqual(layer.biases.gradients[0][0], outputGradients)
         const expectedWeightGradients = [
             [-0.2 * -2, -0.2 * 1, -0.2 * -3, -0.2 * 4, -0.2 * 0.5, -0.2 * -1, -0.2 * -0.75, -0.2 * 2],
             [0.7 * -2, 0.7 * 1, 0.7 * -3, 0.7 * 4, 0.7 * 0.5, 0.7 * -1, 0.7 * -0.75, 0.7 * 2],
             [1.4 * -2, 1.4 * 1, 1.4 * -3, 1.4 * 4, 1.4 * 0.5, 1.4 * -1, 1.4 * -0.75, 1.4 * 2],
         ]
-        assert.deepEqual(layer.weights[0].gradients[0][0], expectedWeightGradients[0])
-        assert.deepEqual(layer.weights[1].gradients[0][0], expectedWeightGradients[1])
-        assert.deepEqual(layer.weights[2].gradients[0][0], expectedWeightGradients[2])
+        assertDeepEqual(layer.weights[0].gradients[0][0], expectedWeightGradients[0])
+        assertDeepEqual(layer.weights[1].gradients[0][0], expectedWeightGradients[1])
+        assertDeepEqual(layer.weights[2].gradients[0][0], expectedWeightGradients[2])
 
         const input2 = new Volume([[-2, 1, -3, 4], [0.5, -1, -0.75, 2]])
 
@@ -250,12 +284,12 @@ describe('Fully connected', function () {
         layer.output.gradients[0][0] = outputGradients
         layer.backPropagate()
 
-        assert.deepEqual(input2.gradients[0][0], expectedInputGradients[0])
-        assert.deepEqual(input2.gradients[1][0], expectedInputGradients[1])
-        assert.deepEqual(layer.biases.gradients[0][0], outputGradients.map(value => 2 * value))
-        assert.deepEqual(layer.weights[0].gradients[0][0], expectedWeightGradients[0].map(value => 2 * value))
-        assert.deepEqual(layer.weights[1].gradients[0][0], expectedWeightGradients[1].map(value => 2 * value))
-        assert.deepEqual(layer.weights[2].gradients[0][0], expectedWeightGradients[2].map(value => 2 * value))
+        assertDeepEqual(input2.gradients[0][0], expectedInputGradients[0])
+        assertDeepEqual(input2.gradients[1][0], expectedInputGradients[1])
+        assertDeepEqual(layer.biases.gradients[0][0], outputGradients.map(value => 2 * value))
+        assertDeepEqual(layer.weights[0].gradients[0][0], expectedWeightGradients[0].map(value => 2 * value))
+        assertDeepEqual(layer.weights[1].gradients[0][0], expectedWeightGradients[1].map(value => 2 * value))
+        assertDeepEqual(layer.weights[2].gradients[0][0], expectedWeightGradients[2].map(value => 2 * value))
     })
 })
 
@@ -316,7 +350,7 @@ describe('Relu', function () {
     it('should output correct shape', function () {
         const layer = new ReluLayer({inputShape: [2, 2, 4]})
 
-        assert.deepEqual(layer.getOutputShape(), [2, 2, 4])
+        assertDeepEqual(layer.getOutputShape(), [2, 2, 4])
     })
 
     it('should output relued values', function () {
@@ -325,8 +359,8 @@ describe('Relu', function () {
 
         layer.feedForward(input)
 
-        assert.deepEqual(layer.output.data[0][0], [0, 1, 0, 4])
-        assert.deepEqual(layer.output.data[1][0], [0.5, 0, 0, 2])
+        assertDeepEqual(layer.output.data[0][0], [0, 1, 0, 4])
+        assertDeepEqual(layer.output.data[1][0], [0.5, 0, 0, 2])
     })
 
     it('should back propagate', function () {
@@ -339,8 +373,8 @@ describe('Relu', function () {
         layer.output.gradients[1][0] = outputGradients[1]
         layer.backPropagate()
 
-        assert.deepEqual(layer.input.gradients[0][0], [0, 0.7, 0, -5.2])
-        assert.deepEqual(layer.input.gradients[1][0], [-1, 0, 0, -0.45])
+        assertDeepEqual(layer.input.gradients[0][0], [0, 0.7, 0, -5.2])
+        assertDeepEqual(layer.input.gradients[1][0], [-1, 0, 0, -0.45])
     })
 })
 
@@ -348,7 +382,7 @@ describe('Sigmoid', function () {
     it('should output correct shape', function () {
         const layer = new SigmoidLayer({inputShape: [2, 2, 4]})
 
-        assert.deepEqual(layer.getOutputShape(), [2, 2, 4])
+        assertDeepEqual(layer.getOutputShape(), [2, 2, 4])
     })
 
     it('should output sigmoid values', function () {
@@ -357,8 +391,8 @@ describe('Sigmoid', function () {
 
         layer.feedForward(input)
 
-        assert.deepEqual(layer.output.data[0][0], [sigmoid(-2), sigmoid(1), sigmoid(-3), sigmoid(4)])
-        assert.deepEqual(layer.output.data[1][0], [sigmoid(0.5), sigmoid(-1), sigmoid(-0.75), sigmoid(2)])
+        assertDeepEqual(layer.output.data[0][0], [sigmoid(-2), sigmoid(1), sigmoid(-3), sigmoid(4)])
+        assertDeepEqual(layer.output.data[1][0], [sigmoid(0.5), sigmoid(-1), sigmoid(-0.75), sigmoid(2)])
     })
 
     it('should back propagate', function () {
@@ -371,13 +405,13 @@ describe('Sigmoid', function () {
         layer.output.gradients[1][0] = outputGradients[1]
         layer.backPropagate()
 
-        assert.deepEqual(input.gradients[0][0], [
+        assertDeepEqual(input.gradients[0][0], [
             sigmoid(-2) * (1 - sigmoid(-2)) * outputGradients[0][0],
             sigmoid(1) * (1 - sigmoid(1)) * outputGradients[0][1],
             sigmoid(-3) * (1 - sigmoid(-3)) * outputGradients[0][2],
             sigmoid(4) * (1 - sigmoid(4)) * outputGradients[0][3]
         ])
-        assert.deepEqual(input.gradients[1][0], [
+        assertDeepEqual(input.gradients[1][0], [
             sigmoid(0.5) * (1 - sigmoid(0.5)) * outputGradients[1][0],
             sigmoid(-1) * (1 - sigmoid(-1)) * outputGradients[1][1],
             sigmoid(-0.75) * (1 - sigmoid(-0.75)) * outputGradients[1][2],
@@ -390,7 +424,7 @@ describe('Tanh', function () {
     it('should output correct shape', function () {
         const layer = new TanhLayer({inputShape: [2, 2, 4]})
 
-        assert.deepEqual(layer.getOutputShape(), [2, 2, 4])
+        assertDeepEqual(layer.getOutputShape(), [2, 2, 4])
     })
 
     it('should output tanh values', function () {
@@ -399,8 +433,8 @@ describe('Tanh', function () {
 
         layer.feedForward(input)
 
-        assert.deepEqual(layer.output.data[0][0], [Math.tanh(-2), Math.tanh(1), Math.tanh(-3), Math.tanh(4)])
-        assert.deepEqual(layer.output.data[1][0], [Math.tanh(0.5), Math.tanh(-1), Math.tanh(-0.75), Math.tanh(2)])
+        assertDeepEqual(layer.output.data[0][0], [Math.tanh(-2), Math.tanh(1), Math.tanh(-3), Math.tanh(4)])
+        assertDeepEqual(layer.output.data[1][0], [Math.tanh(0.5), Math.tanh(-1), Math.tanh(-0.75), Math.tanh(2)])
     })
 
     it('should back propagate', function () {
@@ -413,13 +447,13 @@ describe('Tanh', function () {
         layer.output.gradients[1][0] = outputGradients[1]
         layer.backPropagate()
 
-        assert.deepEqual(input.gradients[0][0], [
+        assertDeepEqual(input.gradients[0][0], [
             (1 - Math.pow(Math.tanh(-2), 2)) * outputGradients[0][0],
             (1 - Math.pow(Math.tanh(1), 2)) * outputGradients[0][1],
             (1 - Math.pow(Math.tanh(-3), 2)) * outputGradients[0][2],
             (1 - Math.pow(Math.tanh(4), 2)) * outputGradients[0][3]
         ])
-        assert.deepEqual(input.gradients[1][0], [
+        assertDeepEqual(input.gradients[1][0], [
             (1 - Math.pow(Math.tanh(0.5), 2)) * outputGradients[1][0],
             (1 - Math.pow(Math.tanh(-1), 2)) * outputGradients[1][1],
             (1 - Math.pow(Math.tanh(-0.75), 2)) * outputGradients[1][2],
@@ -459,7 +493,7 @@ describe('Neural Network', function () {
             layers.push(nn.layers[i].constructor.name)
         }
 
-        assert.deepEqual(layers, ['Convolution1DLayer', 'MaxPool1DLayer', 'ReluLayer', 'FullyConnectedLayer', 'FullyConnectedLayer', 'SoftmaxLayer'])
+        assertDeepEqual(layers, ['Convolution1DLayer', 'MaxPool1DLayer', 'ReluLayer', 'FullyConnectedLayer', 'FullyConnectedLayer', 'SoftmaxLayer'])
     })
 
     it('should build a regression network', function () {
@@ -492,7 +526,7 @@ describe('Neural Network', function () {
             layers.push(nn.layers[i].constructor.name)
         }
 
-        assert.deepEqual(layers, ['Convolution1DLayer', 'MaxPool1DLayer', 'ReluLayer', 'FullyConnectedLayer', 'FullyConnectedLayer', 'RegressionLayer'])
+        assertDeepEqual(layers, ['Convolution1DLayer', 'MaxPool1DLayer', 'ReluLayer', 'FullyConnectedLayer', 'FullyConnectedLayer', 'RegressionLayer'])
     })
 
     it('should add an activation function', function () {
@@ -506,7 +540,7 @@ describe('Neural Network', function () {
             layers.push(nn.layers[i].constructor.name)
         }
 
-        assert.deepEqual(layers, ['Convolution1DLayer', 'ReluLayer'])
+        assertDeepEqual(layers, ['Convolution1DLayer', 'ReluLayer'])
     })
 
     it('should error on unknown activation function', function () {
@@ -532,8 +566,8 @@ describe('Volume', function () {
         assert.equal(volume.depth, 1)
         assert.equal(volume.height, 1)
         assert.equal(volume.width, 4)
-        assert.deepEqual(volume.data.map(col => col.map(row => Array.from(row))), [[data]])
-        assert.deepEqual(volume.gradients.map(col => col.map(row => Array.from(row))), [[data.map(() => 0)]])
+        assertDeepEqual(volume.data.map(col => col.map(row => Array.from(row))), [[data]])
+        assertDeepEqual(volume.gradients.map(col => col.map(row => Array.from(row))), [[data.map(() => 0)]])
     })
 
     it('should take 2D data', function () {
@@ -543,8 +577,8 @@ describe('Volume', function () {
         assert.equal(volume.depth, 2)
         assert.equal(volume.height, 1)
         assert.equal(volume.width, 4)
-        assert.deepEqual(volume.data, data.map(row => [Float64Array.from(row)]))
-        assert.deepEqual(volume.gradients, data.map((row) => [row.map(() => 0)]))
+        assertDeepEqual(volume.data, data.map(row => [row.slice()]))
+        assertDeepEqual(volume.gradients, data.map((row) => [row.map(() => 0)]))
     })
 
     it('should take 3D data', function () {
@@ -557,8 +591,8 @@ describe('Volume', function () {
         assert.equal(volume.depth, 2)
         assert.equal(volume.height, 3)
         assert.equal(volume.width, 4)
-        assert.deepEqual(volume.data, data.map((col) => col.map((row) => Float64Array.from(row))))
-        assert.deepEqual(volume.gradients, data.map((col) => col.map((row) => row.map(() => 0))))
+        assertDeepEqual(volume.data, data.map((col) => col.map((row) => row.slice())))
+        assertDeepEqual(volume.gradients, data.map((col) => col.map((row) => row.map(() => 0))))
     })
 
     it('should generate 3D data', function () {
