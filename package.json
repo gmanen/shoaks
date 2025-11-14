@@ -11,11 +11,10 @@
   "devDependencies": {
     "benchmark": "^2.1.4",
     "eslint": "^9.0.0",
-    "mocha": "^11.1.0",
     "vite": "^5.0.0"
   },
   "scripts": {
-    "test": "mocha --extension js \"test/**/*.js\"",
+    "test": "node --test \"test/**/*.js\"",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
