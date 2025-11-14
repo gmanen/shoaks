@@ -14,7 +14,7 @@
     "vite": "^5.0.0"
   },
   "scripts": {
-    "test": "node --test \"test/*.js\"",
+    "test": "node --test \"test/test.js\"",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
