@@ -2,10 +2,10 @@ import NeuralNetwork from '../cnn/NeuralNetwork.js'
 import {flatten} from '../cnn/utils.js'
 
 export default class Brain {
-    constructor(sightInputs, additionalInputs, outputs) {
+    constructor(sightInputs, additionalInputs = 0, outputs) {
         if (sightInputs !== undefined) {
             this.convNet = new NeuralNetwork()
-            this.convNet.addLayer('conv1d', {inputShape: [3, sightInputs], kernelSize: 3, nbKernels: 10, stride: 1})
+            this.convNet.addLayer('conv1d', {inputShape: [sightInputs, 1, 1], kernelSize: 3, nbKernels: 10, stride: 1})
             this.convNet.addLayer('activation', {activationFunction: 'relu'})
             this.convNet.addLayer('conv1d', {kernelSize: 3, nbKernels: 10, stride: 1})
             this.convNet.addLayer('activation', {activationFunction: 'relu'})
@@ -19,8 +19,10 @@ export default class Brain {
         }
     }
 
-    evaluate(inputArray, additionalInputs) {
-        return this.denseNet.predict(flatten(this.convNet.predict(inputArray)).concat(additionalInputs))
+    evaluate(inputArray, additionalInputs = []) {
+        const extras = Array.isArray(additionalInputs) ? additionalInputs : [additionalInputs]
+
+        return this.denseNet.predict(flatten(this.convNet.predict(inputArray)).concat(extras))
     }
 
     clone() {

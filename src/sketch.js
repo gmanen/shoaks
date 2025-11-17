@@ -139,7 +139,7 @@ const p = new p5(sketch => {
         }
     }
 })
-global.p = p
+window.p = p
 
 for (const container of ['shoak-pov-sketch', 'foish-pov-sketch']) {
     new p5(sketch => {
