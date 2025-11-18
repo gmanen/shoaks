@@ -52,9 +52,13 @@ export const addVector = (alice, bob) => {
 
 export const sigmoid = (value) => 1 / (1 + Math.exp(-value))
 
-export const flatten = (array) => array.reduce(
-    (flattened, current) => flattened.concat(Array.isArray(current) ? flatten(current) : current),
-    []
-)
+export const flatten = (array) => {
+    const iterable = array && typeof array.toArray === 'function' ? array.toArray() : array
+
+    return iterable.reduce(
+        (flattened, current) => flattened.concat(Array.isArray(current) ? flatten(current) : current),
+        []
+    )
+}
 
 export const zeros = (length) => new Float64Array(length)
