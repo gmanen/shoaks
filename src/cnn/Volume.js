@@ -104,4 +104,20 @@ export default class Volume {
             }
         }
     }
+
+    toArray() {
+        const dataArray = []
+
+        for (let d = 0; d < this.depth; d++) {
+            const depthArray = []
+
+            for (let h = 0; h < this.height; h++) {
+                depthArray.push(Array.from(this.data[d][h]))
+            }
+
+            dataArray.push(depthArray)
+        }
+
+        return dataArray
+    }
 }

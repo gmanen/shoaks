@@ -26,7 +26,7 @@ const Shoak = (id, brain, shoakColor) => {
             layers.push(parseInt(window.shoakNNSize))
         }
 
-        brain = new Brain(fov * resolution + 1, layers, 2, 'relu')
+        brain = new Brain(fov * resolution + 1, 1, 2)
         brain.randomize()
     }
 

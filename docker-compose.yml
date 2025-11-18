@@ -13,6 +13,8 @@ services:
     tty: true
     environment:
       NODE_ENV: development
+      HTTP_PROXY: http://udp-proxy.fiducial.dom:8888/
+      HTTPS_PROXY: http://udp-proxy.fiducial.dom:8888/
 
   tests:
     build: .

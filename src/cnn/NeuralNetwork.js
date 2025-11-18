@@ -100,5 +100,7 @@ export default class NeuralNetwork {
         for (const layer of this.layers) {
             nn.layers.push(layer.clone())
         }
+
+        return nn
     }
 }
