@@ -6,15 +6,15 @@ export default class Brain {
         if (sightInputs !== undefined) {
             this.convNet = new NeuralNetwork()
             this.convNet.addLayer('conv1d', {inputShape: [sightInputs, 1, 1], kernelSize: 3, nbKernels: 10, stride: 1})
-            this.convNet.addLayer('activation', {activationFunction: 'relu'})
+            this.convNet.addLayer('relu')
             this.convNet.addLayer('conv1d', {kernelSize: 3, nbKernels: 10, stride: 1})
-            this.convNet.addLayer('activation', {activationFunction: 'relu'})
+            this.convNet.addLayer('relu')
             this.convNet.addLayer('conv1d', {kernelSize: 3, nbKernels: 10, stride: 1})
-            this.convNet.addLayer('activation', {activationFunction: 'relu'})
+            this.convNet.addLayer('relu')
 
             this.denseNet = new NeuralNetwork()
             this.denseNet.addLayer('fc', {inputShape: [this.convNet.getOutputShape().reduce((total, value) => value * total, 1) + additionalInputs], nbNeurons: 12})
-            this.denseNet.addLayer('activation', {activationFunction: 'relu'})
+            this.denseNet.addLayer('relu')
             this.denseNet.addLayer('fc', {nbNeurons: outputs})
         }
     }
