@@ -25,6 +25,7 @@ window.shoakFov = getParameter('shoakFov', 90)
 window.foishFov = getParameter('foishFov', 300)
 window.shoakResolution = getParameter('shoakResolution', 1)
 window.foishResolution = getParameter('foishResolution', 1)
+window.shoakNNHistorySize = getParameter('shoakNNHistorySize', 400)
 window.debug = getParameter('debug')
 
 const p = new p5(sketch => {
@@ -58,6 +59,8 @@ const p = new p5(sketch => {
             environment.insert(foish, 'foish')
         }
 
+        const trackedShoakId = environment.frenzy.aliveBest ? environment.frenzy.aliveBest.id : null
+
         for (const shoak of environment.frenzy.population()) {
             for (const foish of shoak.eat()) {
                 environment.school.remove(foish)
@@ -65,7 +68,7 @@ const p = new p5(sketch => {
             }
 
             shoak.bounce(padding, topDownWidth - padding, padding, topDownHeight - padding)
-            shoak.think(sketch)
+            shoak.think(sketch, shoak.id === trackedShoakId)
         }
 
         for (const foish of environment.school.population()) {
