@@ -262,6 +262,7 @@ function refreshChart(toChart) {
 
     if ('aliveBest' === toChart && environment.frenzy.aliveBest) {
         chart.data = environment.frenzy.aliveBest.neuralNetResults
+
         chartTitle.innerHTML = 'Best alive shoak (fitness: '+Math.pow(environment.frenzy.aliveBest.fitness(), 1/4).toFixed(2)+')'
     } else if ('aliveBest' !== toChart) {
         const corpses = environment.frenzy.graveyard.corpses.sort((a, b) => b.fitness() - a.fitness())

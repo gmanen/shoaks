@@ -47,7 +47,7 @@ export default class Brain {
             this.denseInput[this.flattenedConvSize + i] = extras[i]
         }
 
-        return this.denseNet.predict(this.denseInput)
+        return flatten(this.denseNet.predict(this.denseInput))
     }
 
     clone() {

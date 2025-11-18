@@ -87,6 +87,7 @@ const Shoak = (id, brain, shoakColor) => {
 
             const halfFov = p.radians(self.fov / 2)
             const result = self.brain.evaluate(sight.concat([1 - self.mass / self.maxMass]))
+
             const mag = self.baseSpeed + result[0]
             const direction = p.constrain(result[1], -halfFov, halfFov)
 
@@ -101,6 +102,7 @@ const Shoak = (id, brain, shoakColor) => {
             if (self.currentAge < 200) {
                 self.angles.push(direction)
                 const mean = self.angles.reduce((sum, value) => {return sum + value}, 0) / self.angles.length
+
                 self.angleSD = Math.sqrt(self.angles.reduce((sum, value) => {return sum + (value - mean) * (value - mean)}, 0) / (self.angles.length - 1))
             }
 
@@ -147,7 +149,7 @@ const Shoak = (id, brain, shoakColor) => {
             if (self.currentAge > 150 && self.angleSD < p.PI / 36) {
                 self.mass -= 1
             }
-            
+
             self.radius = getShoakRadius(self)
             self.shape = generateCircle(self)
         },
