@@ -8,6 +8,7 @@ export default class ReluLayer extends Layer {
         this.inputShape = params.inputShape
         this.outputShape = params.outputShape || this.getOutputShape()
         this.output = new Volume(...this.outputShape, 0.0)
+        this.biases = []
     }
 
     feedForward(input) {
