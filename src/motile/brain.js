@@ -13,17 +13,39 @@ export default class Brain {
             this.convNet.addLayer('conv1d', {kernelSize: 3, nbKernels: 10, stride: 1})
             this.convNet.addLayer('relu')
 
+            this.additionalInputs = additionalInputs
+            this.flattenedConvSize = this.convNet.getOutputShape().reduce((total, value) => value * total, 1)
+            this.flattenBuffer = new Float64Array(this.flattenedConvSize)
+
             this.denseNet = new NeuralNetwork()
-            this.denseNet.addLayer('fc', {inputShape: [this.convNet.getOutputShape().reduce((total, value) => value * total, 1) + additionalInputs], nbNeurons: 12})
+            this.denseNet.addLayer('fc', {inputShape: [this.flattenedConvSize + additionalInputs, 1, 1], nbNeurons: 12})
             this.denseNet.addLayer('relu')
             this.denseNet.addLayer('fc', {nbNeurons: outputs})
+
+            this.denseInput = new Float64Array(this.flattenedConvSize + additionalInputs)
         }
     }
 
     evaluate(inputArray, additionalInputs = []) {
         const extras = Array.isArray(additionalInputs) ? additionalInputs : [additionalInputs]
+        if (this.flattenBuffer.length !== this.flattenedConvSize) {
+            this.flattenBuffer = new Float64Array(this.flattenedConvSize)
+        }
 
-        return this.denseNet.predict(flatten(this.convNet.predict(inputArray)).concat(extras))
+        const denseInputSize = this.flattenedConvSize + extras.length
+
+        if (!this.denseInput || this.denseInput.length !== denseInputSize) {
+            this.denseInput = new Float64Array(denseInputSize)
+        }
+
+        flatten(this.convNet.predict(inputArray), this.flattenBuffer)
+        this.denseInput.set(this.flattenBuffer)
+
+        for (let i = 0; i < extras.length; i++) {
+            this.denseInput[this.flattenedConvSize + i] = extras[i]
+        }
+
+        return this.denseNet.predict(this.denseInput)
     }
 
     clone() {

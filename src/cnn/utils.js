@@ -52,13 +52,47 @@ export const addVector = (alice, bob) => {
 
 export const sigmoid = (value) => 1 / (1 + Math.exp(-value))
 
-export const flatten = (array) => {
+export const flatten = (array, output) => {
     const iterable = array && typeof array.toArray === 'function' ? array.toArray() : array
 
-    return iterable.reduce(
-        (flattened, current) => flattened.concat(Array.isArray(current) ? flatten(current) : current),
-        []
-    )
+    let flat = output
+
+    if (!flat) {
+        let size = 0
+        const sizeStack = [iterable]
+
+        while (sizeStack.length > 0) {
+            const current = sizeStack.pop()
+
+            if (Array.isArray(current)) {
+                for (let i = 0; i < current.length; i++) {
+                    sizeStack.push(current[i])
+                }
+            } else {
+                size++
+            }
+        }
+
+        flat = new Float64Array(size)
+    }
+
+    let offset = 0
+    const stack = [iterable]
+
+    while (stack.length > 0) {
+        const current = stack.pop()
+
+        if (Array.isArray(current)) {
+            for (let i = current.length - 1; i >= 0; i--) {
+                stack.push(current[i])
+            }
+        } else {
+            flat[offset] = current
+            offset++
+        }
+    }
+
+    return flat
 }
 
 export const zeros = (length) => new Float64Array(length)
