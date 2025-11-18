@@ -18,6 +18,7 @@ const Shoak = (id, brain, shoakColor) => {
     const baseMass = 15
     const fov = parseInt(window.shoakFov)
     const resolution = parseFloat(window.shoakResolution)
+    const neuralNetHistorySize = Math.max(1, parseInt(window.shoakNNHistorySize) || 400)
 
     if (!brain) {
         const layers = []
@@ -55,14 +56,26 @@ const Shoak = (id, brain, shoakColor) => {
         generateShape: generateCircle,
         angles: [],
         angleSD: 0,
-        neuralNetResults: []
+        neuralNetResults: [],
+        neuralNetFrame: 0,
+        neuralNetHistorySize
     }
 
     self.shape = generateCircle(self)
     self.radius = getShoakRadius(self)
 
+    const logNeuralNetResult = (magnitude, angle) => {
+        const entry = {magnitude, angle, frame: self.neuralNetFrame++}
+
+        if (self.neuralNetResults.length >= self.neuralNetHistorySize) {
+            self.neuralNetResults.shift()
+        }
+
+        self.neuralNetResults.push(entry)
+    }
+
     const shoakBehaviors = self => ({
-        think: (sketch) => {
+        think: (sketch, shouldLogOutputs = false) => {
             const sight = self.see(environment.qtree, ['foish'], self.sight, sketch)
 
             if (debug) {
@@ -77,7 +90,9 @@ const Shoak = (id, brain, shoakColor) => {
             const mag = self.baseSpeed + result[0]
             const direction = p.constrain(result[1], -halfFov, halfFov)
 
-            self.neuralNetResults.push({magnitude: result[0], angle: result[1], frame: self.neuralNetResults.length})
+            if (shouldLogOutputs) {
+                logNeuralNetResult(result[0], result[1])
+            }
 
             /*
              * Calculates the standard deviation for the rotation decisions of the shark in order to weed out those for which the outputs of the Neural Net are always the same whataver the input
