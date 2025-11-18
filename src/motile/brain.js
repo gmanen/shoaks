@@ -1,26 +1,29 @@
 import NeuralNetwork from '../cnn/NeuralNetwork.js'
+import Volume from '../cnn/Volume.js'
 import {flatten} from '../cnn/utils.js'
 
 export default class Brain {
-    constructor(sightInputs, additionalInputs, outputs) {
+    constructor(sightInputs, additionalInputs = 0, outputs) {
         if (sightInputs !== undefined) {
             this.convNet = new NeuralNetwork()
-            this.convNet.addLayer('conv1d', {inputShape: [3, sightInputs], kernelSize: 3, nbKernels: 10, stride: 1})
-            this.convNet.addLayer('activation', {activationFunction: 'relu'})
+            this.convNet.addLayer('conv1d', {inputShape: [sightInputs, 1, 1], kernelSize: 3, nbKernels: 10, stride: 1})
+            this.convNet.addLayer('relu')
             this.convNet.addLayer('conv1d', {kernelSize: 3, nbKernels: 10, stride: 1})
-            this.convNet.addLayer('activation', {activationFunction: 'relu'})
+            this.convNet.addLayer('relu')
             this.convNet.addLayer('conv1d', {kernelSize: 3, nbKernels: 10, stride: 1})
-            this.convNet.addLayer('activation', {activationFunction: 'relu'})
+            this.convNet.addLayer('relu')
 
             this.denseNet = new NeuralNetwork()
             this.denseNet.addLayer('fc', {inputShape: [this.convNet.getOutputShape().reduce((total, value) => value * total, 1) + additionalInputs], nbNeurons: 12})
-            this.denseNet.addLayer('activation', {activationFunction: 'relu'})
+            this.denseNet.addLayer('relu')
             this.denseNet.addLayer('fc', {nbNeurons: outputs})
         }
     }
 
-    evaluate(inputArray, additionalInputs) {
-        return this.denseNet.predict(flatten(this.convNet.predict(inputArray)).concat(additionalInputs))
+    evaluate(inputArray, additionalInputs = []) {
+        const extras = Array.isArray(additionalInputs) ? additionalInputs : [additionalInputs]
+
+        return this.denseNet.predict(flatten(this.convNet.predict(inputArray)).concat(extras))
     }
 
     clone() {
@@ -58,21 +61,59 @@ export default class Brain {
 
     mutateNeuralNet(nn, rate) {
         for (const layer of nn.layers) {
-            for (let i = 0; i < layer.biases.length; i++) {
-                if (p.random() < rate) {
-                    let sqrtNbWeights = layer.weights[i].length
+            this.mutateLayerWeights(layer, rate)
+        }
+    }
 
-                    if (Array.isArray(layer.weights[i][0])) {
-                        sqrtNbWeights *= layer.weights[i][0].length
+    randomize() {
+        this.randomizeNeuralNet(this.convNet)
+        this.randomizeNeuralNet(this.denseNet)
+    }
+
+    randomizeNeuralNet(nn) {
+        for (const layer of nn.layers) {
+            this.randomizeLayerWeights(layer)
+        }
+    }
+
+    mutateLayerWeights(layer, rate) {
+        if (!layer.weights || !layer.biases) {
+            return
+        }
+
+        const weightVolumes = Array.isArray(layer.weights) ? layer.weights : [layer.weights]
+
+        for (const weightVolume of weightVolumes) {
+            this.mutateVolume(weightVolume, rate)
+        }
+
+        this.mutateVolume(layer.biases, rate)
+    }
+
+    randomizeLayerWeights(layer) {
+        if (!layer.weights || !layer.biases) {
+            return
+        }
+
+        const weightVolumes = Array.isArray(layer.weights) ? layer.weights : [layer.weights]
+
+        for (let weightIndex = 0; weightIndex < weightVolumes.length; weightIndex++) {
+            const volume = weightVolumes[weightIndex]
+            layer.weights[weightIndex] = new Volume(volume.width, volume.height, volume.depth)
+        }
+
+        layer.biases = new Volume(layer.biases.width, layer.biases.height, layer.biases.depth)
+    }
+
+    mutateVolume(volume, rate) {
+        const sqrtNbWeights = Math.sqrt(volume.width * volume.height * volume.depth)
+
+        for (let d = 0; d < volume.depth; d++) {
+            for (let h = 0; h < volume.height; h++) {
+                for (let w = 0; w < volume.width; w++) {
+                    if (p.random() < rate) {
+                        volume.data[d][h][w] += p.randomGaussian(0, 1 / sqrtNbWeights)
                     }
-
-                    sqrtNbWeights = Math.sqrt(sqrtNbWeights)
-
-                    const mutateMapper = (value) => Array.isArray(value)
-                        ? value.map(mutateMapper)
-                        : value + p.randomGaussian(0, 1 / sqrtNbWeights)
-
-                    layer.weights[i] = layer.weights[i].map(mutateMapper)
                 }
             }
         }

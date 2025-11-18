@@ -34,7 +34,7 @@ const Foish = (id, brain, foishColor) => {
             layers.push(parseInt(window.foishNNSize))
         }
 
-        brain = new Brain(fov * resolution, layers, 2, 'relu')
+        brain = new Brain(fov * resolution, 0, 2)
         brain.randomize()
     }
 
