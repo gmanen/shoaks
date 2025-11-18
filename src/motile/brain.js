@@ -4,6 +4,8 @@ import {flatten} from '../cnn/utils.js'
 
 export default class Brain {
     constructor(sightInputs, additionalInputs = 0, outputs) {
+        this.flattenBuffer = []
+
         if (sightInputs !== undefined) {
             this.convNet = new NeuralNetwork()
             this.convNet.addLayer('conv1d', {inputShape: [sightInputs, 1, 1], kernelSize: 3, nbKernels: 10, stride: 1})

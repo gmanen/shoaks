@@ -74,7 +74,7 @@ const p = new p5(sketch => {
         for (const foish of environment.school.population()) {
             foish.school()
             foish.bounce(padding, topDownWidth - padding, padding, topDownHeight - padding)
-            foish.think(sketch)
+            //foish.think(sketch)
         }
 
         // Done on the population instead of on every individual because it handles dying individuals and storing their data for later selection
