@@ -30,7 +30,9 @@ export default class Brain {
 
     evaluate(inputArray, additionalInputs = []) {
         const extras = Array.isArray(additionalInputs) ? additionalInputs : [additionalInputs]
+        const expectedExtraInputs = this.additionalInputs || 0
         const convInput = inputArray instanceof Volume ? inputArray : new Volume(inputArray)
+
         if (!this.flattenedConvSize) {
             this.flattenedConvSize = this.convNet.getOutputShape().reduce((total, value) => value * total, 1)
         }
@@ -39,7 +41,7 @@ export default class Brain {
             this.flattenBuffer = new Float64Array(this.flattenedConvSize)
         }
 
-        const denseInputSize = this.flattenedConvSize + extras.length
+        const denseInputSize = this.flattenedConvSize + expectedExtraInputs
 
         if (!this.denseInput || this.denseInput.length !== denseInputSize) {
             this.denseInput = new Float64Array(denseInputSize)
@@ -48,8 +50,8 @@ export default class Brain {
         flatten(this.convNet.predict(convInput), this.flattenBuffer)
         this.denseInput.set(this.flattenBuffer)
 
-        for (let i = 0; i < extras.length; i++) {
-            this.denseInput[this.flattenedConvSize + i] = extras[i]
+        for (let i = 0; i < expectedExtraInputs; i++) {
+            this.denseInput[this.flattenedConvSize + i] = i < extras.length ? extras[i] : 0
         }
 
         return flatten(this.denseNet.predict(this.denseInput))

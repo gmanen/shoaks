@@ -27,7 +27,7 @@ const Shoak = (id, brain, shoakColor) => {
             layers.push(parseInt(window.shoakNNSize))
         }
 
-        brain = new Brain(fov * resolution + 1, 1, 2)
+        brain = new Brain(fov * resolution, 1, 2)
         brain.randomize()
     }
 
@@ -86,7 +86,7 @@ const Shoak = (id, brain, shoakColor) => {
             }
 
             const halfFov = p.radians(self.fov / 2)
-            const result = self.brain.evaluate(sight.concat([1 - self.mass / self.maxMass]))
+            const result = self.brain.evaluate(sight, 1 - self.mass / self.maxMass)
 
             const mag = self.baseSpeed + result[0]
             const direction = p.constrain(result[1], -halfFov, halfFov)
