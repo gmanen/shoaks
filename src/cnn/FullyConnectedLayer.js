@@ -101,8 +101,8 @@ export default class FullyConnectedLayer extends Layer {
         return new FullyConnectedLayer({
             nbNeurons: this.nbNeurons,
             inputShape: this.inputShape,
-            weights: this.weights,
-            biases: this.biases
+            weights: this.weights.map(weight => new Volume(weight.data)),
+            biases: new Volume(this.biases.data)
         })
     }
 }

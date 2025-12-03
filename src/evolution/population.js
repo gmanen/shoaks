@@ -172,11 +172,11 @@ export default class Population {
 
         for (let i = 0; i < number; i++) {
             const random = p.random()
-            let offset = population[0].fitness()
+            let offset = sumFitness === 0 ? 1 / population.length : population[0].fitness() / sumFitness
             let selected = population[0]
 
             for (let j = 1; j < population.length && population[0] === selected; j++) {
-                offset += population[j].fitness() / sumFitness
+                offset += sumFitness === 0 ? 1 / population.length : population[j].fitness() / sumFitness
 
                 if (random <= offset) {
                     selected = population[j]

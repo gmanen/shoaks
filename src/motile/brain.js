@@ -70,10 +70,25 @@ export default class Brain {
 
     crossoverNeuralNet(myNN, parentNN) {
         for (let layerIndex = 0; layerIndex < myNN.layers.length; layerIndex++) {
-            for (let i = 0; i < myNN.layers[layerIndex].biases.length; i++) {
+            const layer = myNN.layers[layerIndex]
+            const parentLayer = parentNN.layers[layerIndex]
+
+            if (layer.weights) {
+                const weightVolumes = Array.isArray(layer.weights) ? layer.weights : [layer.weights]
+                const parentWeightVolumes = Array.isArray(parentLayer.weights) ? parentLayer.weights : [parentLayer.weights]
+
+                for (let i = 0; i < weightVolumes.length; i++) {
+                    if (p.random() < 0.5) { // Picks the other parent
+                        weightVolumes[i] = new Volume(parentWeightVolumes[i].data)
+                    }
+                }
+
+                layer.weights = Array.isArray(layer.weights) ? weightVolumes : weightVolumes[0]
+            }
+
+            if (layer.biases && layer.biases.data) {
                 if (p.random() < 0.5) { // Picks the other parent
-                    myNN.layers[layerIndex].biases[i] = parentNN.layers[layerIndex].biases[i]
-                    myNN.layers[layerIndex].weights[i] = parentNN.layers[layerIndex].weights[i]
+                    layer.biases = new Volume(parentLayer.biases.data)
                 }
             }
         }
