@@ -53,8 +53,18 @@ export default class Brain {
 
     clone() {
         const brain = new Brain()
+
         brain.convNet = this.convNet.clone()
         brain.denseNet = this.denseNet.clone()
+
+        brain.additionalInputs = this.additionalInputs
+        brain.flattenedConvSize = this.flattenedConvSize
+
+        const flattenedSize = this.flattenedConvSize || 0
+        const extraInputs = this.additionalInputs || 0
+
+        brain.flattenBuffer = new Float64Array(flattenedSize)
+        brain.denseInput = new Float64Array(flattenedSize + extraInputs)
 
         return brain
     }
@@ -62,8 +72,8 @@ export default class Brain {
     crossover(parentBrain) {
         const childBrain = this.clone()
 
-        this.crossoverNeuralNet(this.convNet, parentBrain.convNet)
-        this.crossoverNeuralNet(this.denseNet, parentBrain.denseNet)
+        childBrain.crossoverNeuralNet(childBrain.convNet, parentBrain.convNet)
+        childBrain.crossoverNeuralNet(childBrain.denseNet, parentBrain.denseNet)
 
         return childBrain
     }
