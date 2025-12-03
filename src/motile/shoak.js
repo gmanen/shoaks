@@ -27,7 +27,7 @@ const Shoak = (id, brain, shoakColor) => {
             layers.push(parseInt(window.shoakNNSize))
         }
 
-        brain = new Brain(fov * resolution + 1, 1, 2)
+        brain = new Brain(fov * resolution, 1, 2)
         brain.randomize()
     }
 
@@ -86,7 +86,7 @@ const Shoak = (id, brain, shoakColor) => {
             }
 
             const halfFov = p.radians(self.fov / 2)
-            const result = self.brain.evaluate(sight.concat([1 - self.mass / self.maxMass]))
+            const result = self.brain.evaluate(sight, [1 - self.mass / self.maxMass])
 
             const mag = self.baseSpeed + result[0]
             const direction = p.constrain(result[1], -halfFov, halfFov)
@@ -101,9 +101,15 @@ const Shoak = (id, brain, shoakColor) => {
              */
             if (self.currentAge < 200) {
                 self.angles.push(direction)
-                const mean = self.angles.reduce((sum, value) => {return sum + value}, 0) / self.angles.length
 
-                self.angleSD = Math.sqrt(self.angles.reduce((sum, value) => {return sum + (value - mean) * (value - mean)}, 0) / (self.angles.length - 1))
+                if (self.angles.length > 1) {
+                    const mean = self.angles.reduce((sum, value) => sum + value, 0) / self.angles.length
+                    const variance = self.angles.reduce((sum, value) => sum + (value - mean) * (value - mean), 0) / (self.angles.length - 1)
+
+                    self.angleSD = Math.sqrt(variance)
+                } else {
+                    self.angleSD = 0
+                }
             }
 
             const computed = p5.Vector.fromAngle(self.velocity.heading(), mag)
