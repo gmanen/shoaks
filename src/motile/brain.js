@@ -31,21 +31,24 @@ export default class Brain {
     evaluate(inputArray, additionalInputs = []) {
         const extras = Array.isArray(additionalInputs) ? additionalInputs : [additionalInputs]
         const convInput = inputArray instanceof Volume ? inputArray : new Volume(inputArray)
+
         if (this.flattenBuffer.length !== this.flattenedConvSize) {
             this.flattenBuffer = new Float64Array(this.flattenedConvSize)
         }
 
-        const denseInputSize = this.flattenedConvSize + extras.length
+        const denseInputSize = this.flattenedConvSize + this.additionalInputs
 
         if (!this.denseInput || this.denseInput.length !== denseInputSize) {
             this.denseInput = new Float64Array(denseInputSize)
+        } else {
+            this.denseInput.fill(0)
         }
 
         flatten(this.convNet.predict(convInput), this.flattenBuffer)
         this.denseInput.set(this.flattenBuffer)
 
-        for (let i = 0; i < extras.length; i++) {
-            this.denseInput[this.flattenedConvSize + i] = extras[i]
+        for (let i = 0; i < this.additionalInputs; i++) {
+            this.denseInput[this.flattenedConvSize + i] = i < extras.length ? extras[i] : 0
         }
 
         return flatten(this.denseNet.predict(this.denseInput))
@@ -53,8 +56,18 @@ export default class Brain {
 
     clone() {
         const brain = new Brain()
+
         brain.convNet = this.convNet.clone()
         brain.denseNet = this.denseNet.clone()
+
+        brain.additionalInputs = this.additionalInputs
+        brain.flattenedConvSize = this.flattenedConvSize
+
+        const flattenedSize = this.flattenedConvSize || 0
+        const extraInputs = this.additionalInputs || 0
+
+        brain.flattenBuffer = new Float64Array(flattenedSize)
+        brain.denseInput = new Float64Array(flattenedSize + extraInputs)
 
         return brain
     }
@@ -62,18 +75,33 @@ export default class Brain {
     crossover(parentBrain) {
         const childBrain = this.clone()
 
-        this.crossoverNeuralNet(this.convNet, parentBrain.convNet)
-        this.crossoverNeuralNet(this.denseNet, parentBrain.denseNet)
+        childBrain.crossoverNeuralNet(childBrain.convNet, parentBrain.convNet)
+        childBrain.crossoverNeuralNet(childBrain.denseNet, parentBrain.denseNet)
 
         return childBrain
     }
 
     crossoverNeuralNet(myNN, parentNN) {
         for (let layerIndex = 0; layerIndex < myNN.layers.length; layerIndex++) {
-            for (let i = 0; i < myNN.layers[layerIndex].biases.length; i++) {
+            const layer = myNN.layers[layerIndex]
+            const parentLayer = parentNN.layers[layerIndex]
+
+            if (layer.weights) {
+                const weightVolumes = Array.isArray(layer.weights) ? layer.weights : [layer.weights]
+                const parentWeightVolumes = Array.isArray(parentLayer.weights) ? parentLayer.weights : [parentLayer.weights]
+
+                for (let i = 0; i < weightVolumes.length; i++) {
+                    if (p.random() < 0.5) { // Picks the other parent
+                        weightVolumes[i] = new Volume(parentWeightVolumes[i].data)
+                    }
+                }
+
+                layer.weights = Array.isArray(layer.weights) ? weightVolumes : weightVolumes[0]
+            }
+
+            if (layer.biases && layer.biases.data) {
                 if (p.random() < 0.5) { // Picks the other parent
-                    myNN.layers[layerIndex].biases[i] = parentNN.layers[layerIndex].biases[i]
-                    myNN.layers[layerIndex].weights[i] = parentNN.layers[layerIndex].weights[i]
+                    layer.biases = new Volume(parentLayer.biases.data)
                 }
             }
         }

@@ -99,8 +99,8 @@ export default class Convolution1DLayer extends Layer {
             inputShape: this.inputShape,
             stride: this.stride,
             outputShape: this.outputShape,
-            weights: this.weights,
-            biases: this.biases
+            weights: this.weights.map(weight => new Volume(weight.data)),
+            biases: new Volume(this.biases.data)
         })
     }
 }
